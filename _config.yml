@@ -104,5 +104,5 @@ theme: landscape
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: 'git'
-  repo: 'git@github2:chaochao-Jessica/chaochaoBlog.github.io.git'
+  repo: 'git@github2:chaochao-Jessica/chaochao-Jessica.github.io.git'
   branch: master
