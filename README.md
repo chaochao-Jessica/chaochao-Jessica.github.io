@@ -35,4 +35,10 @@ More info: [Generating](https://hexo.io/docs/generating.html)
 $ hexo deploy
 ```
 
+### Access to the blog
+
+``` link
+$ http://chaochao-Jessica.github.io
+```
+
 More info: [Deployment](https://hexo.io/docs/one-command-deployment.html)
