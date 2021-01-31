@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>jenkins 配置 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Jenkins 是一个可扩展的持续集成引擎。接下来，我将通过两篇文章来全面介绍jenkins的基本概念，安装、配置、自动构建、监控、部署，以及在生产环境的高级应用。 Jenkins 介绍主要用途： 1、持续、自动地构建&#x2F;测试软件项目。 2、监控一些定时执行的任务。 Jenkins特性： 1、易于安装-本文提供四种配置方式。 2、易于配置-所有配置都是通过其提供的web界面实现。 3、集成RSS&#x2F;E">
+<meta property="og:type" content="article">
+<meta property="og:title" content="jenkins 配置">
+<meta property="og:url" content="http://example.com/2021/01/31/jenkins-%E9%85%8D%E7%BD%AE/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Jenkins 是一个可扩展的持续集成引擎。接下来，我将通过两篇文章来全面介绍jenkins的基本概念，安装、配置、自动构建、监控、部署，以及在生产环境的高级应用。 Jenkins 介绍主要用途： 1、持续、自动地构建&#x2F;测试软件项目。 2、监控一些定时执行的任务。 Jenkins特性： 1、易于安装-本文提供四种配置方式。 2、易于配置-所有配置都是通过其提供的web界面实现。 3、集成RSS&#x2F;E">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-01-31T15:07:10.000Z">
+<meta property="article:modified_time" content="2021-01-31T15:39:37.927Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-jenkins-配置" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/01/31/jenkins-%E9%85%8D%E7%BD%AE/" class="article-date">
+  <time class="dt-published" datetime="2021-01-31T15:07:10.000Z" itemprop="datePublished">2021-01-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      jenkins 配置
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>Jenkins 是一个可扩展的持续集成引擎。接下来，我将通过两篇文章来全面介绍jenkins的基本概念，安装、配置、自动构建、监控、部署，以及在生产环境的高级应用。</p>
+<h2 id="Jenkins-介绍"><a href="#Jenkins-介绍" class="headerlink" title="Jenkins 介绍"></a>Jenkins 介绍</h2><p>主要用途：</p>
+<p>1、持续、自动地构建/测试软件项目。</p>
+<p>2、监控一些定时执行的任务。</p>
+<p>Jenkins特性：</p>
+<p>1、易于安装-本文提供四种配置方式。</p>
+<p>2、易于配置-所有配置都是通过其提供的web界面实现。</p>
+<p>3、集成RSS/E-mail通过RSS发布构建结果或当构建完成时通过e-mail通知。</p>
+<p>4、生成JUnit/TestNG测试报告。</p>
+<p>5、分布式构建支持Jenkins能够让多台计算机一起构建/测试。</p>
+<p>6、文件识别:Jenkins能够跟踪哪次构建生成哪些jar，哪次构建使用哪个版本的jar等。</p>
+<p>7、插件支持:支持扩展插件，你可以开发适合自己团队使用的工具。</p>
+<p>8、Jenkins一切配置都可以在web界面上完成。有些配置如MAVEN_HOME和Email，只需要配置一次，所有的项目就都能用。当然也可以通过修改XML进行配置。</p>
+<p>9、支持Maven的模块(Module)，Jenkins对Maven做了优化，因此它能自动识别Module，每个Module可以配置成一个job。相当灵活。</p>
+<p>10、测试报告聚合，所有模块的测试报告都被聚合在一起，结果一目了然，使用其他CI，这几乎是件不可能完成的任务。</p>
+<p>11、构件指纹(artifact fingerprint)，每次build的结果构件都被很好的自动管理，无需任何配置就可以方便的浏览下载。</p>
+<h2 id="Jenkins安装"><a href="#Jenkins安装" class="headerlink" title="Jenkins安装"></a>Jenkins安装</h2><p>1.下载安装<br>2.配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo vi &#x2F;etc&#x2F;sysconfig&#x2F;jenkins</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>JENKINS_USER=”root” ## 原值 “jenkins” 必须修改，否则权限不足</p>
+<p>JENKINS_PORT=”8080” ## 原值 “8080” 可以不修改</p>
+<p>Jenkins安装目录: /usr/lib/jenkins</p>
+<p>Jenkins工作目录: /var/lib/jenkins(对应于环境变量 JENKINS_HOME)</p>
+<p>构建项目源码目录：/var/lib/jenkins/workspace</p>
+<p>日志默认路径：/var/log/jenkins/jenkins.log</p>
+<p>启动</p>
+<p>sudo systemctl enable jenkins</p>
+<p>sudo systemctl restart jenkins</p>
+<p>或</p>
+<p>service jenkins start</p>
+<p>基本配置</p>
+<p>3、登录</p>
+<p>登录地址：<a target="_blank" rel="noopener" href="http://localhost:8080/">http://localhost:8080/</a>    </p>
+<p>初始密码获取：</p>
+<p>sudo cat /var/lib/jenkins/secrets/initialAdminPassword</p>
+<p>密码修改：</p>
+<p>登录主页-用户-选择用户（admin）-设置-输入新密码</p>
+<p>4、Jenkins插件安装</p>
+<p>Jenkins 插件管理器允许您安装新的插件，和更新您Jenkins服务器上的插件。管理者将连接到联机资料库，检索可用的和已更新的插件。如果您的Jenkins服务器 无法直接连接到外部资源，您可以从Jenkins网站上下载。</p>
+<p>在已运行的Jenkins主页中，点击左侧的系统管理—&gt;管理插件-&gt;可选插件<br>安装插件：Git plugin，ssh plugin</p>
+<p>5、JDK、Maven、Git配置</p>
+<p>jenkins 构建，依赖JDK、Maven、Git 插件，因此项目构建前需要对插件做配置，配置流程如下：</p>
+<p>进入 系统管理-&gt;全局工具配置：</p>
+<p>Maven别名：用户自定义，便于标识就可以。</p>
+<p>MAVEN_HOME：这个是本机MAVEN的安装路径。</p>
+<p>git安装完毕后，此处git默认配置完毕.</p>
+<p>JDK别名：用户自定义，便于标识就可以。</p>
+<p>JDK_HOME：这个是本机JDK的安装路径。见上文第二部分 JDK安装。（错误的路径会有红字提示你的）</p>
+<p>自动安装：不推荐这个选项</p>
+<h2 id="源码构建、打包、部署、运行"><a href="#源码构建、打包、部署、运行" class="headerlink" title="源码构建、打包、部署、运行"></a>源码构建、打包、部署、运行</h2><p>（基于springboot，maven，git，ssh）</p>
+<p>1、 新建项目</p>
+<p>新建-&gt; 输入一个任务名-&gt;构建一个maven项目。</p>
+<p>源码管理：<br>Repository URL：</p>
+<p><a href="mailto:&#103;&#x69;&#116;&#64;&#103;&#105;&#116;&#x68;&#x75;&#x62;&#46;&#x63;&#111;&#x6d;">&#103;&#x69;&#116;&#64;&#103;&#105;&#116;&#x68;&#x75;&#x62;&#46;&#x63;&#111;&#x6d;</a>:wzjgn/xinwei-example.git</p>
+<p>或</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/wzjgn/xinwei-example.git">https://github.com/wzjgn/xinwei-example.git</a></p>
+<p>如果Repository URL 地址有误，此处会报错。</p>
+<p>Add ，添加源码访问凭证。</p>
+<p>本案例通过ssh key 访问git源码服务器。因此，在此处添加ssh私钥</p>
+<p>构建触发器：</p>
+<p>选择“Build whenever a SNAPSHOT dependency is built” ：依赖于快照的构建，当git有修改时就构建项目。</p>
+<p>Build periodically ：此选项仅仅通知Jenkins按指定的频率对项目进行构建，而不管SCM是否有变化。如果想在这个Job中运行一些测试用例的话，它就很有帮助。</p>
+<p>Poll SCM ：这是CI 系统中常见的选项。当您选择此选项，您可以指定一个定时作业表达式来定义Jenkins每隔多久检查一下您源代码仓库的变化。如果发现变化，就执行一次构建。例如，表达式中填写0,15,30,45 * * * *将使Jenkins每隔15分钟就检查一次您源码仓库的变化。</p>
+<p>构建：</p>
+<p>默认Jenkins在workspace目录下面找到pom.xml文件。</p>
+<p>Post Steps：</p>
+<p>配置构建成功后的动作，添加shell。</p>
+<p>脚本作用：</p>
+<p>1、关闭原应用程序进程</p>
+<p>2、解压新生成的tar包</p>
+<p>3、wrapper启动重构后的应用</p>
+<h4 id="构建"><a href="#构建" class="headerlink" title="构建"></a>构建</h4><p>手动触发项目构建流程：</p>
+<p>构建状态:下图中分级符号概述了一个Job新近一次构建会产生的四种可能的状态：</p>
+<p>Successful:完成构建，且被认为是稳定的。</p>
+<p>Unstable:完成构建，但被认为不稳定。</p>
+<p>Failed:构建失败。</p>
+<p>Disabled:构建已禁用。</p>
+<p>构建稳定性: 当一个Job中构建已完成并生成了一个未发布的目标构件，如果您准备评估此次构建的稳定性，Jenkins会基于一些后处理器任务为构建发布一个稳健指数 (从0-100 )，这些任务一般以插件的方式实现。它们可能包括单元测试(JUnit)、覆盖率(Cobertura )和静态代码分析(FindBugs)。分数越高，表明构建越稳定。下图中分级符号概述了稳定性的评分范围。任何构建作业的状态(总分100)低于80分就是不稳定的。</p>
+<p>双击上图 项目名称，进入该项目的控制台：</p>
+<p>在控制台点击“立即构建”，BuildHistory 列表第一条记录展示项目当前的构建进度条。点击 “项目构建进度条”，进入监控页面。查看构建过程，日志。</p>
+<p>构建完毕，访问地址</p>
+<p><a target="_blank" rel="noopener" href="http://localhost/">http://localhost/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/01/31/jenkins-%E9%85%8D%E7%BD%AE/" data-id="ckklbh5gj0000zgfy2y3ph0q8" data-title="jenkins 配置" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2021/01/24/%E8%AE%A4%E8%AF%86docker/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">认识docker</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">January 2021</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2021/01/31/jenkins-%E9%85%8D%E7%BD%AE/">jenkins 配置</a>
+          </li>
+        
+          <li>
+            <a href="/2021/01/24/%E8%AE%A4%E8%AF%86docker/">认识docker</a>
+          </li>
+        
+          <li>
+            <a href="/2021/01/24/Websocket-2/">Websocket 2</a>
+          </li>
+        
+          <li>
+            <a href="/2021/01/17/websocket/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2021/01/17/nextjs/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2021 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
