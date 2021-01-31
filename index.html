@@ -71,6 +71,555 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-promise" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/01/31/promise/" class="article-date">
+  <time class="dt-published" datetime="2021-01-31T15:55:31.000Z" itemprop="datePublished">2021-01-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/01/31/promise/">promise</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <ol>
+<li>异步回调</li>
+<li>1 回调地狱<br>在需要多个操作的时候，会导致多个回调函数嵌套，导致代码不够直观，就是常说的回调地狱</li>
+</ol>
+<p>1.2 并行结果<br>如果几个异步操作之间并没有前后顺序之分,但需要等多个异步操作都完成后才能执行后续的任务，无法实现并行节约时间</p>
+<ol start="2">
+<li><p>Promise<br>Promise本意是承诺，在程序中的意思就是承诺我过一段时间后会给你一个结果。 什么时候会用到过一段时间？答案是异步操作，异步是指可能比较长时间才有结果的才做，例如网络请求、读取本地文件等</p>
+</li>
+<li><p>Promise的三种状态<br>Pending Promise对象实例创建时候的初始状态<br>Fulfilled 可以理解为成功的状态<br>Rejected 可以理解为失败的状态<br>then 方法就是用来指定Promise 对象的状态改变时确定执行的操作，resolve 时执行第一个函数（onFulfilled），reject 时执行第二个函数（onRejected）</p>
+</li>
+<li><p>构造一个Promise</p>
+</li>
+<li><p>1 使用Promise<br>let promise = new Promise((resolve, reject) =&gt; {<br>  setTimeout(() =&gt; {</p>
+<pre><code>  if(Math.random()&gt;0.5)
+      resolve(&#39;This is resolve!&#39;);
+  else
+      reject(&#39;This is reject!&#39;);</code></pre>
+<p>  }, 1000);<br>});<br>promise.then(Fulfilled,Rejected)<br>构造一个Promise实例需要给Promise构造函数传入一个函数。<br>传入的函数需要有两个形参，两个形参都是function类型的参数。<br>第一个形参运行后会让Promise实例处于resolve状态，所以我们一般给第一个形参命名为resolve,使 Promise 对象的状态改变成成功，同时传递一个参数用于后续成功后的操作<br>第一个形参运行后会让Promise实例处于reject状态，所以我们一般给第一个形参命名为reject,将 Promise 对象的状态改变为失败，同时将错误的信息传递到后续错误处理的操作</p>
+</li>
+<li><p>2 es5模拟Promise<br>function Promise(fn) {<br>  fn((data)=&gt; {</p>
+<pre><code>  this.success(data);</code></pre>
+<p>  }, (error)=&gt; {</p>
+<pre><code>  this.error();</code></pre>
+<p>  });<br>}</p>
+</li>
+</ol>
+<p>Promise.prototype.resolve = function (data) {<br>    this.success(data);<br>}</p>
+<p>Promise.prototype.reject = function (error) {<br>    this.error(error);<br>}</p>
+<p>Promise.prototype.then = function (success, error) {<br>    this.success = success;<br>    this.error = error;<br>}<br>4.3 es6模拟Promise<br>class Promise {<br>    constructor(fn) {<br>        fn((data)=&gt; {<br>            this.success(data);<br>        }, (error)=&gt; {<br>            this.error();<br>        });<br>    }</p>
+<pre><code>resolve(data) &#123;
+    this.success(data);
+&#125;
+
+reject(error) &#123;
+    this.error(error);
+&#125;
+
+then(success, error) &#123;
+    this.success = success;
+    this.error = error;
+    console.log(this);
+&#125;</code></pre>
+<p>}<br>5. promise 做为函数的返回值<br>function ajaxPromise (queryUrl) {<br>  return new Promise((resolve, reject) =&gt; {<br>    let xhr = new XMLHttpRequest();<br>    xhr.open(‘GET’, queryUrl, true);<br>    xhr.send(null);<br>    xhr.onreadystatechange = () =&gt; {<br>      if (xhr.readyState === 4) {<br>        if (xhr.status === 200) {<br>          resolve(xhr.responseText);<br>        } else {<br>          reject(xhr.responseText);<br>        }<br>      }<br>    }<br>  });<br>}</p>
+<p>ajaxPromise(‘<a target="_blank" rel="noopener" href="http://www.baidu.com&/#39;">http://www.baidu.com&#39;</a>)<br>  .then((value) =&gt; {<br>    console.log(value);<br>  })<br>  .catch((err) =&gt; {<br>    console.error(err);<br>  });<br>6.promise的链式调用<br>每次调用返回的都是一个新的Promise实例<br>链式调用的参数通过返回值传递<br>then可以使用链式调用的写法原因在于，每一次执行该方法时总是会返回一个Promise对象</p>
+<p>readFile(‘1.txt’).then(function (data) {<br>    console.log(data);<br>    return data;<br>}).then(function (data) {<br>    console.log(data);<br>    return readFile(data);<br>}).then(function (data) {<br>    console.log(data);<br>}).catch(function(err){<br> console.log(err);<br>});<br>7.promise API<br>7.1 Promise.all<br>参数：接受一个数组，数组内都是Promise实例<br>返回值：返回一个Promise实例，这个Promise实例的状态转移取决于参数的Promise实例的状态变化。当参数中所有的实例都处于resolve状态时，返回的Promise实例会变为resolve状态。如果参数中任意一个实例处于reject状态，返回的Promise实例变为reject状态。<br>Promise.all([p1, p2]).then(function (result) {<br>  console.log(result); // [ ‘2.txt’, ‘2’ ]<br>});<br>不管两个promise谁先完成，Promise.all 方法会按照数组里面的顺序将结果返回</p>
+<p>7.2 Promise.race<br>参数：接受一个数组，数组内都是Promise实例<br>返回值：返回一个Promise实例，这个Promise实例的状态转移取决于参数的Promise实例的状态变化。当参数中任何一个实例处于resolve状态时，返回的Promise实例会变为resolve状态。如果参数中任意一个实例处于reject状态，返回的Promise实例变为reject状态。<br>Promise.race([p1, p2]).then(function (result) {<br>  console.log(result); // [ ‘2.txt’, ‘2’ ]<br>});<br>7.3 Promise.resolve返回一个Promise实例，这个实例处于resolve状态。<br>根据传入的参数不同有不同的功能：</p>
+<p>值(对象、数组、字符串等)：作为resolve传递出去的值<br>Promise实例：原封不动返回<br>7.4 Promise.reject<br>返回一个Promise实例，这个实例处于reject状态。</p>
+<p>参数一般就是抛出的错误信息。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/01/31/promise/" data-id="ckklbsz3h000081fy3dbbb0xa" data-title="promise" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-jenkins-配置" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/01/31/jenkins-%E9%85%8D%E7%BD%AE/" class="article-date">
+  <time class="dt-published" datetime="2021-01-31T15:07:10.000Z" itemprop="datePublished">2021-01-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/01/31/jenkins-%E9%85%8D%E7%BD%AE/">jenkins 配置</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>Jenkins 是一个可扩展的持续集成引擎。接下来，我将通过两篇文章来全面介绍jenkins的基本概念，安装、配置、自动构建、监控、部署，以及在生产环境的高级应用。</p>
+<h2 id="Jenkins-介绍"><a href="#Jenkins-介绍" class="headerlink" title="Jenkins 介绍"></a>Jenkins 介绍</h2><p>主要用途：</p>
+<p>1、持续、自动地构建/测试软件项目。</p>
+<p>2、监控一些定时执行的任务。</p>
+<p>Jenkins特性：</p>
+<p>1、易于安装-本文提供四种配置方式。</p>
+<p>2、易于配置-所有配置都是通过其提供的web界面实现。</p>
+<p>3、集成RSS/E-mail通过RSS发布构建结果或当构建完成时通过e-mail通知。</p>
+<p>4、生成JUnit/TestNG测试报告。</p>
+<p>5、分布式构建支持Jenkins能够让多台计算机一起构建/测试。</p>
+<p>6、文件识别:Jenkins能够跟踪哪次构建生成哪些jar，哪次构建使用哪个版本的jar等。</p>
+<p>7、插件支持:支持扩展插件，你可以开发适合自己团队使用的工具。</p>
+<p>8、Jenkins一切配置都可以在web界面上完成。有些配置如MAVEN_HOME和Email，只需要配置一次，所有的项目就都能用。当然也可以通过修改XML进行配置。</p>
+<p>9、支持Maven的模块(Module)，Jenkins对Maven做了优化，因此它能自动识别Module，每个Module可以配置成一个job。相当灵活。</p>
+<p>10、测试报告聚合，所有模块的测试报告都被聚合在一起，结果一目了然，使用其他CI，这几乎是件不可能完成的任务。</p>
+<p>11、构件指纹(artifact fingerprint)，每次build的结果构件都被很好的自动管理，无需任何配置就可以方便的浏览下载。</p>
+<h2 id="Jenkins安装"><a href="#Jenkins安装" class="headerlink" title="Jenkins安装"></a>Jenkins安装</h2><p>1.下载安装<br>2.配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo vi &#x2F;etc&#x2F;sysconfig&#x2F;jenkins</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>JENKINS_USER=”root” ## 原值 “jenkins” 必须修改，否则权限不足</p>
+<p>JENKINS_PORT=”8080” ## 原值 “8080” 可以不修改</p>
+<p>Jenkins安装目录: /usr/lib/jenkins</p>
+<p>Jenkins工作目录: /var/lib/jenkins(对应于环境变量 JENKINS_HOME)</p>
+<p>构建项目源码目录：/var/lib/jenkins/workspace</p>
+<p>日志默认路径：/var/log/jenkins/jenkins.log</p>
+<p>启动</p>
+<p>sudo systemctl enable jenkins</p>
+<p>sudo systemctl restart jenkins</p>
+<p>或</p>
+<p>service jenkins start</p>
+<p>基本配置</p>
+<p>3、登录</p>
+<p>登录地址：<a target="_blank" rel="noopener" href="http://localhost:8080/">http://localhost:8080/</a>    </p>
+<p>初始密码获取：</p>
+<p>sudo cat /var/lib/jenkins/secrets/initialAdminPassword</p>
+<p>密码修改：</p>
+<p>登录主页-用户-选择用户（admin）-设置-输入新密码</p>
+<p>4、Jenkins插件安装</p>
+<p>Jenkins 插件管理器允许您安装新的插件，和更新您Jenkins服务器上的插件。管理者将连接到联机资料库，检索可用的和已更新的插件。如果您的Jenkins服务器 无法直接连接到外部资源，您可以从Jenkins网站上下载。</p>
+<p>在已运行的Jenkins主页中，点击左侧的系统管理—&gt;管理插件-&gt;可选插件<br>安装插件：Git plugin，ssh plugin</p>
+<p>5、JDK、Maven、Git配置</p>
+<p>jenkins 构建，依赖JDK、Maven、Git 插件，因此项目构建前需要对插件做配置，配置流程如下：</p>
+<p>进入 系统管理-&gt;全局工具配置：</p>
+<p>Maven别名：用户自定义，便于标识就可以。</p>
+<p>MAVEN_HOME：这个是本机MAVEN的安装路径。</p>
+<p>git安装完毕后，此处git默认配置完毕.</p>
+<p>JDK别名：用户自定义，便于标识就可以。</p>
+<p>JDK_HOME：这个是本机JDK的安装路径。见上文第二部分 JDK安装。（错误的路径会有红字提示你的）</p>
+<p>自动安装：不推荐这个选项</p>
+<h2 id="源码构建、打包、部署、运行"><a href="#源码构建、打包、部署、运行" class="headerlink" title="源码构建、打包、部署、运行"></a>源码构建、打包、部署、运行</h2><p>（基于springboot，maven，git，ssh）</p>
+<p>1、 新建项目</p>
+<p>新建-&gt; 输入一个任务名-&gt;构建一个maven项目。</p>
+<p>源码管理：<br>Repository URL：</p>
+<p><a href="mailto:&#103;&#x69;&#116;&#64;&#103;&#105;&#116;&#x68;&#x75;&#x62;&#46;&#x63;&#111;&#x6d;">&#103;&#x69;&#116;&#64;&#103;&#105;&#116;&#x68;&#x75;&#x62;&#46;&#x63;&#111;&#x6d;</a>:wzjgn/xinwei-example.git</p>
+<p>或</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/wzjgn/xinwei-example.git">https://github.com/wzjgn/xinwei-example.git</a></p>
+<p>如果Repository URL 地址有误，此处会报错。</p>
+<p>Add ，添加源码访问凭证。</p>
+<p>本案例通过ssh key 访问git源码服务器。因此，在此处添加ssh私钥</p>
+<p>构建触发器：</p>
+<p>选择“Build whenever a SNAPSHOT dependency is built” ：依赖于快照的构建，当git有修改时就构建项目。</p>
+<p>Build periodically ：此选项仅仅通知Jenkins按指定的频率对项目进行构建，而不管SCM是否有变化。如果想在这个Job中运行一些测试用例的话，它就很有帮助。</p>
+<p>Poll SCM ：这是CI 系统中常见的选项。当您选择此选项，您可以指定一个定时作业表达式来定义Jenkins每隔多久检查一下您源代码仓库的变化。如果发现变化，就执行一次构建。例如，表达式中填写0,15,30,45 * * * *将使Jenkins每隔15分钟就检查一次您源码仓库的变化。</p>
+<p>构建：</p>
+<p>默认Jenkins在workspace目录下面找到pom.xml文件。</p>
+<p>Post Steps：</p>
+<p>配置构建成功后的动作，添加shell。</p>
+<p>脚本作用：</p>
+<p>1、关闭原应用程序进程</p>
+<p>2、解压新生成的tar包</p>
+<p>3、wrapper启动重构后的应用</p>
+<h4 id="构建"><a href="#构建" class="headerlink" title="构建"></a>构建</h4><p>手动触发项目构建流程：</p>
+<p>构建状态:下图中分级符号概述了一个Job新近一次构建会产生的四种可能的状态：</p>
+<p>Successful:完成构建，且被认为是稳定的。</p>
+<p>Unstable:完成构建，但被认为不稳定。</p>
+<p>Failed:构建失败。</p>
+<p>Disabled:构建已禁用。</p>
+<p>构建稳定性: 当一个Job中构建已完成并生成了一个未发布的目标构件，如果您准备评估此次构建的稳定性，Jenkins会基于一些后处理器任务为构建发布一个稳健指数 (从0-100 )，这些任务一般以插件的方式实现。它们可能包括单元测试(JUnit)、覆盖率(Cobertura )和静态代码分析(FindBugs)。分数越高，表明构建越稳定。下图中分级符号概述了稳定性的评分范围。任何构建作业的状态(总分100)低于80分就是不稳定的。</p>
+<p>双击上图 项目名称，进入该项目的控制台：</p>
+<p>在控制台点击“立即构建”，BuildHistory 列表第一条记录展示项目当前的构建进度条。点击 “项目构建进度条”，进入监控页面。查看构建过程，日志。</p>
+<p>构建完毕，访问地址</p>
+<p><a target="_blank" rel="noopener" href="http://localhost/">http://localhost/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/01/31/jenkins-%E9%85%8D%E7%BD%AE/" data-id="ckklbh5gj0000zgfy2y3ph0q8" data-title="jenkins 配置" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-认识docker" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/01/24/%E8%AE%A4%E8%AF%86docker/" class="article-date">
+  <time class="dt-published" datetime="2021-01-24T15:58:46.000Z" itemprop="datePublished">2021-01-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/01/24/%E8%AE%A4%E8%AF%86docker/">认识docker</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/01/24/%E8%AE%A4%E8%AF%86docker/" data-id="ckkbbu4hb0000cpfy9a8af48b" data-title="认识docker" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-Websocket-2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/01/24/Websocket-2/" class="article-date">
+  <time class="dt-published" datetime="2021-01-24T15:53:07.000Z" itemprop="datePublished">2021-01-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/01/24/Websocket-2/">Websocket 2</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/01/24/Websocket-2/" data-id="ckkbboguz000076fy8fnz98kd" data-title="Websocket 2" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-websocket" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/01/17/websocket/" class="article-date">
+  <time class="dt-published" datetime="2021-01-17T13:31:08.975Z" itemprop="datePublished">2021-01-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="websocket学习"><a href="#websocket学习" class="headerlink" title="websocket学习"></a>websocket学习</h1><ol>
+<li>HTTP的架构模式<br>Http是客户端/服务器模式中请求-响应所用的协议，在这种模式中，客户端(一般是web浏览器)向服务器提交HTTP请求，服务器响应请求的资源</li>
+</ol>
+<p>1.1. HTTP的特点<br>HTTP是半双工协议，也就是说，在同一时刻数据只能单向流动，客户端向服务器发送请求(单向的)，然后服务器响应请求(单向的)。<br>服务器不能主动推送数据给浏览器。<br>2. 双向通信<br>Comet是一种用于web的推送技术，能使服务器能实时地将更新的信息传送到客户端，而无须客户端发出请求，目前有三种实现方式:轮询（polling） 长轮询（long-polling）和iframe流（streaming）。</p>
+<p>2.1 轮询<br>轮询是客户端和服务器之间会一直进行连接，每隔一段时间就询问一次<br>这种方式连接数会很多，一个接受，一个发送。而且每次发送请求都会有Http的Header，会很耗流量，也会消耗CPU的利用率<br>polling</p>
+<p>server.js</p>
+<p>let express = require(‘express’);<br>let app = express();<br>app.use(express.static(__dirname));<br>app.use(function(req,res,next){<br>    res.header(‘Access-Control-Allow-Origin’, ‘<a href="http://localhost:8000&#39;">http://localhost:8000&#39;</a>);<br>    res.end(new Date().toLocaleTimeString());<br>});<br>app.listen(8080);</p>
+<body>
+    <div id="clock"></div>
+    <script>
+            setInterval(function () {
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET', 'http://localhost:8080', true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        document.querySelector('#clock').innerHTML = xhr.responseText;
+                    }
+                }
+                xhr.send();
+            }, 1000);
+    </script>
+</body>
+1.2 长轮询
+长轮询是对轮询的改进版，客户端发送HTTP给服务器之后，看有没有新消息，如果没有新消息，就一直等待
+当有新消息的时候，才会返回给客户端。在某种程度上减小了网络带宽和CPU利用率等问题。
+由于http数据包的头部数据量往往很大（通常有400多个字节），但是真正被服务器需要的数据却很少（有时只有10个字节左右），这样的数据包在网络上周期性的传输，难免对网络带宽是一种浪费
+longpolling
+
+<p>clock.html</p>
+  <div id="clock"></div>
+    <script>
+        (function poll() {
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET', 'http://localhost:8080', true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        document.querySelector('#clock').innerHTML = xhr.responseText;
+                        poll();
+                    }
+                }
+                xhr.send();
+        })();
+    </script>
+long poll 需要有很高的并发能力
+
+<p>1.3 iframe流<br>通过在HTML页面里嵌入一个隐藏的iframe,然后将这个iframe的src属性设为对一个长连接的请求,服务器端就能源源不断地往客户推送数据。<br>iframeflow</p>
+<p>server.js</p>
+<p>const express = require(‘express’);<br>const app = express();<br>app.use(express.static(__dirname));<br>app.get(‘/clock’, function (req, res) {<br>    setInterval(function () {<br>        res.write(<code>            &lt;script type=&quot;text/javascript&quot;&gt;                 parent.document.getElementById(&#39;clock&#39;).innerHTML = &quot;$&#123;new Date().toLocaleTimeString()&#125;&quot;;             &lt;/script&gt;        </code>);<br>    }, 1000);<br>});<br>app.listen(8080);<br>client.html</p>
+<pre><code>&lt;div id=&quot;clock&quot;&gt;&lt;/div&gt;
+&lt;iframe src=&quot;/clock&quot; style=&quot; display:none&quot; /&gt;</code></pre>
+<p>1.4 EventSource流<br>HTML5规范中提供了服务端事件EventSource，浏览器在实现了该规范的前提下创建一个EventSource连接后，便可收到服务端的发送的消息，这些消息需要遵循一定的格式，对于前端开发人员而言，只需在浏览器中侦听对应的事件皆可<br>SSE的简单模型是：一个客户端去从服务器端订阅一条流，之后服务端可以发送消息给客户端直到服务端或者客户端关闭该“流”，所以eventsource也叫作”server-sent-event<code> EventSource流的实现方式对客户端开发人员而言非常简单，兼容性良好 对于服务端，它可以兼容老的浏览器，无需upgrade为其他协议，在简单的服务端推送的场景下可以满足需求 1.4.1 浏览器端 浏览器端，需要创建一个EventSource对象，并且传入一个服务端的接口URI作为参 默认EventSource对象通过侦听message事件获取服务端传来的消息 open事件则在http连接建立后触发 error事件会在通信错误（连接中断、服务端返回数据失败）的情况下触发 同时EventSource规范允许服务端指定自定义事件，客户端侦听该事件即可  &lt;script&gt; var eventSource = new EventSource(&#39;/eventSource&#39;); eventSource.onmessage  = function(e)&#123;     console.log(e.data); &#125; eventSource.onerror  = function(err)&#123;     console.log(err); &#125;  &lt;/script&gt; 1.4.2 服务端 事件流的对应MIME格式为text/event-stream，而且其基于HTTP长连接。针对HTTP1.1规范默认采用长连接，针对HTTP1.0的服务器需要特殊设置。 event-source必须编码成utf-8的格式，消息的每个字段使用&quot;\n&quot;来做分割，并且需要下面4个规范定义好的字段： Event: 事件类型 Data: 发送的数据 ID: 每一条事件流的ID Retry： 告知浏览器在所有的连接丢失之后重新开启新的连接等待的时间，在自动重新连接的过程中，之前收到的最后一个事件流ID会被发送到服务端 let  express = require(&#39;express&#39;); let app = express(); app.use(express.static(__dirname)); let sendCount = 1; app.get(&#39;/eventSource&#39;,function(req,res)&#123;     res.header(&#39;Content-Type&#39;,&#39;text/event-stream&#39;,);     setInterval(() =&gt; &#123;       res.write(</code>event:message\nid:${sendCount++}\ndata:${Date.now()}\n\n`);<br>    }, 1000)<br>});<br>app.listen(8888);<br>let  express = require(‘express’);<br>let app = express();<br>app.use(express.static(__dirname));<br>const SseStream = require(‘ssestream’);<br>let sendCount = 1;<br>app.get(‘/eventSource’,function(req,res){<br>    const sseStream = new SseStream(req);<br>    sseStream.pipe(res);<br>    const pusher = setInterval(() =&gt; {<br>      sseStream.write({<br>        id: sendCount++,<br>        event: ‘message’,<br>        retry: 20000, // 告诉客户端,如果断开连接后,20秒后再重试连接<br>        data: {ts: new Date().toTimeString()}<br>      })<br>    }, 1000)</p>
+<pre><code>res.on(&#39;close&#39;, () =&gt; &#123;
+  clearInterval(pusher);
+  sseStream.unpipe(res);
+&#125;)</code></pre>
+<p>});<br>app.listen(8888);<br>2.websocket<br>WebSockets_API 规范定义了一个 API 用以在网页浏览器和服务器建立一个 socket 连接。通俗地讲：在客户端和服务器保有一个持久的连接，两边可以在任意时间开始发送数据。<br>HTML5开始提供的一种浏览器与服务器进行全双工通讯的网络技术<br>属于应用层协议，它基于TCP传输协议，并复用HTTP的握手通道。<br>2.1 websocket 优势<br>支持双向通信，实时性更强。<br>更好的二进制支持。<br>较少的控制开销。连接创建后，ws客户端、服务端进行数据交换时，协议控制的数据包头部较小。<br>2.2 websocket实战<br>2.2.1 服务端<br>let express = require(‘express’);<br>const path = require(‘path’);<br>let app = express();<br>let server = require(‘http’).createServer(app);<br>app.get(‘/‘, function (req, res) {<br>    res.sendFile(path.resolve(__dirname, ‘index.html’));<br>});<br>app.listen(3000);</p>
+<p>//———————————————–<br>let WebSocketServer = require(‘ws’).Server;<br>let wsServer = new WebSocketServer({ port: 8888 });<br>wsServer.on(‘connection’, function (socket) {<br>    console.log(‘连接成功’);<br>    socket.on(‘message’, function (message) {<br>        console.log(‘接收到客户端消息:’ + message);<br>        socket.send(‘服务器回应:’ + message);<br>    });<br>});<br>2.2.2 客户端<br>    <script><br>        let ws = new WebSocket('ws://localhost:8888');<br>        ws.onopen = function () {<br>            console.log('客户端连接成功');<br>            ws.send('hello');<br>        }<br>        ws.onmessage = function (event) {<br>            console.log('收到服务器的响应 ' + event.data);<br>        }<br>    </script><br>2.3 如何建立连接<br>WebSocket复用了HTTP的握手通道。具体指的是，客户端通过HTTP请求与WebSocket服务端协商升级协议。协议升级完成后，后续的数据交换则遵照WebSocket的协议。</p>
+<p>2.3.1 客户端：申请协议升级<br>首先，客户端发起协议升级请求。可以看到，采用的是标准的HTTP报文格式，且只支持GET方法。</p>
+<p>GET ws://localhost:8888/ HTTP/1.1<br>Host: localhost:8888<br>Connection: Upgrade<br>Upgrade: websocket<br>Sec-WebSocket-Version: 13<br>Sec-WebSocket-Key: IHfMdf8a0aQXbwQO1pkGdA==<br>Connection: Upgrade：表示要升级协议<br>Upgrade: websocket：表示要升级到websocket协议<br>Sec-WebSocket-Version: 13：表示websocket的版本<br>Sec-WebSocket-Key：与后面服务端响应首部的Sec-WebSocket-Accept是配套的，提供基本的防护，比如恶意的连接，或者无意的连接。<br>2.3.2 服务端：响应协议升级<br>服务端返回内容如下，状态代码101表示协议切换。到此完成协议升级，后续的数据交互都按照新的协议来。</p>
+<p>HTTP/1.1 101 Switching Protocols<br>Upgrade: websocket<br>Connection: Upgrade<br>Sec-WebSocket-Accept: aWAY+V/uyz5ILZEoWuWdxjnlb7E=</p>
+<p>2.3.3 Sec-WebSocket-Accept的计算<br>Sec-WebSocket-Accept根据客户端请求首部的Sec-WebSocket-Key计算出来。 计算公式为：</p>
+<p>将Sec-WebSocket-Key跟258EAFA5-E914-47DA-95CA-C5AB0DC85B11拼接。<br>通过SHA1计算出摘要，并转成base64字符串<br>const crypto = require(‘crypto’);<br>const number = ‘258EAFA5-E914-47DA-95CA-C5AB0DC85B11’;<br>const webSocketKey = ‘IHfMdf8a0aQXbwQO1pkGdA==’;<br>let websocketAccept = require(‘crypto’).createHash(‘sha1’).update(webSocketKey + number).digest(‘base64’);<br>console.log(websocketAccept);//aWAY+V/uyz5ILZEoWuWdxjnlb7E=<br>2.3.4 Sec-WebSocket-Key/Accept的作用<br>避免服务端收到非法的websocket连接<br>确保服务端理解websocket连接<br>用浏览器里发起ajax请求，设置header时，Sec-WebSocket-Key以及其他相关的header是被禁止的<br>Sec-WebSocket-Key主要目的并不是确保数据的安全性，因为Sec-WebSocket-Key、Sec-WebSocket-Accept的转换计算公式是公开的，而且非常简单，最主要的作用是预防一些常见的意外情况（非故意的）<br>2.4 数据帧格式<br>WebSocket客户端、服务端通信的最小单位是帧，由1个或多个帧组成一条完整的消息（message）。</p>
+<p>发送端：将消息切割成多个帧，并发送给服务端<br>接收端：接收消息帧，并将关联的帧重新组装成完整的消息<br>2.4.1 数据帧格式<br>单位是比特。比如FIN、RSV1各占据1比特，opcode占据4比特</p>
+<p>  0                   1                   2                   3<br>  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1<br> +-+-+-+-+——-+-+————-+——————————-+<br> |F|R|R|R| opcode|M| Payload len |    Extended payload length    |<br> |I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |<br> |N|V|V|V|       |S|             |   (if payload len==126/127)   |<br> | |1|2|3|       |K|             |                               |<br> +-+-+-+-+——-+-+————-+ - - - - - - - - - - - - - - - +<br> |     Extended payload length continued, if payload len == 127  |</p>
+<ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li>+——————————-+<br>|                               |Masking-key, if MASK set to 1  |</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>——————————-+——————————-+<br>| Masking-key (continued)       |          Payload Data         |</li>
+<li>——————————– - - - - - - - - - - - - - - - +<br>:                     Payload Data continued …                :</li>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li>+<br>|                     Payload Data continued …                |</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>—————————————————————+<br>FIN：1个比特 如果是1，表示这是消息（message）的最后一个分片（fragment），如果是0，表示不是是消息（message）的最后一个分片（fragment）<br>RSV1, RSV2, RSV3：各占1个比特。一般情况下全为0。当客户端、服务端协商采用WebSocket扩展时，这三个标志位可以非0，且值的含义由扩展进行定义。如果出现非零的值，且并没有采用WebSocket扩展，连接出错。<br>Opcode: 4个比特。操作代码，Opcode的值决定了应该如何解析后续的数据载荷（data payload）。如果操作代码是不认识的，那么接收端应该断开连接（fail the connection）<br>%x0：表示一个延续帧。当Opcode为0时，表示本次数据传输采用了数据分片，当前收到的数据帧为其中一个数据分片。<br>%x1：表示这是一个文本帧（frame）<br>%x2：表示这是一个二进制帧（frame）<br>%x3-7：保留的操作代码，用于后续定义的非控制帧。<br>%x8：表示连接断开。<br>%x9：表示这是一个ping操作。<br>%xA：表示这是一个pong操作。<br>%xB-F：保留的操作代码，用于后续定义的控制帧。<br>Mask: 1个比特。表示是否要对数据载荷进行掩码操作<br>从客户端向服务端发送数据时，需要对数据进行掩码操作；从服务端向客户端发送数据时，不需要对数据进行掩码操作,如果服务端接收到的数据没有进行过掩码操作，服务端需要断开连接。<br>如果Mask是1，那么在Masking-key中会定义一个掩码键（masking key），并用这个掩码键来对数据载荷进行反掩码。所有客户端发送到服务端的数据帧，Mask都是1。<br>Payload length：数据载荷的长度，单位是字节。为7位，或7+16位，或7+64位。<br>Payload length=x为0~125：数据的长度为x字节。<br>Payload length=x为126：后续2个字节代表一个16位的无符号整数，该无符号整数的值为数据的长度。<br>Payload length=x为127：后续8个字节代表一个64位的无符号整数（最高位为0），该无符号整数的值为数据的长度。<br>如果payload length占用了多个字节的话，payload length的二进制表达采用网络序（big endian，重要的位在前)<br>Masking-key：0或4字节(32位) 所有从客户端传送到服务端的数据帧，数据载荷都进行了掩码操作，Mask为1，且携带了4字节的Masking-key。如果Mask为0，则没有Masking-key。载荷数据的长度，不包括mask key的长度<br>Payload data：(x+y) 字节<br>载荷数据：包括了扩展数据、应用数据。其中，扩展数据x字节，应用数据y字节。<br>扩展数据：如果没有协商使用扩展的话，扩展数据数据为0字节。所有的扩展都必须声明扩展数据的长度，或者可以如何计算出扩展数据的长度。此外，扩展如何使用必须在握手阶段就协商好。如果扩展数据存在，那么载荷数据长度必须将扩展数据的长度包含在内。<br>应用数据：任意的应用数据，在扩展数据之后（如果存在扩展数据），占据了数据帧剩余的位置。载荷数据长度 减去 扩展数据长度，就得到应用数据的长度。</li>
+</ul>
+<p>2.4.2 掩码算法<br>掩码键（Masking-key）是由客户端挑选出来的32位的随机数。掩码操作不会影响数据载荷的长度。掩码、反掩码操作都采用如下算法：</p>
+<p>对索引i模以4得到j,因为掩码一共就是四个字节<br>对原来的索引进行异或对应的掩码字节<br>异或就是两个数的二进制形式，按位对比，相同取0，不同取1<br>function unmask(buffer, mask) {<br>      const length = buffer.length;<br>      for (let i = 0; i &lt; length; i++) {<br>          buffer[i] ^= mask[i &amp; 3];<br>      }<br>  }<br>2.4.3 服务器实战<br>const net = require(‘net’);<br>const crypto = require(‘crypto’);<br>const CODE = ‘258EAFA5-E914-47DA-95CA-C5AB0DC85B11’;<br>let server = net.createServer(function (socket) {<br>    socket.once(‘data’, function (data) {<br>        data = data.toString();<br>        if (data.match(/Upgrade: websocket/)) {<br>            let rows = data.split(‘\r\n’);//按分割符分开<br>            rows = rows.slice(1, -2);//去掉请求行和尾部的二个分隔符<br>            const headers = {};<br>            rows.forEach(row =&gt; {<br>                let [key, value] = row.split(‘: ‘);<br>                headers[key] = value;<br>            });<br>            if (headers[‘Sec-WebSocket-Version’] == 13) {<br>                let wsKey = headers[‘Sec-WebSocket-Key’];<br>                let acceptKey = crypto.createHash(‘sha1’).update(wsKey + CODE).digest(‘base64’);<br>                let response = [<br>                    ‘HTTP/1.1 101 Switching Protocols’,<br>                    ‘Upgrade: websocket’,<br>                    <code>Sec-WebSocket-Accept: $&#123;acceptKey&#125;</code>,<br>                    ‘Connection: Upgrade’,<br>                    ‘\r\n’<br>                ].join(‘\r\n’);<br>                socket.write(response);<br>                socket.on(‘data’, function (buffers) {<br>                    let _fin = (buffers[0] &amp; 0b10000000) === 0b10000000;//判断是否是结束位,第一个bit是不是1<br>                    let _opcode = buffers[0] &amp; 0b00001111;//取一个字节的后四位,得到的一个是十进制数<br>                    let _masked = buffers[1] &amp; 0b100000000 === 0b100000000;//第一位是否是1<br>                    let _payloadLength = buffers[1] &amp; 0b01111111;//取得负载数据的长度<br>                    let _mask = buffers.slice(2, 6);//掩码<br>                    let payload = buffers.slice(6);//负载数据</p>
+<pre><code>                unmask(payload, _mask);//对数据进行解码处理
+
+                //向客户端响应数据
+                let response = Buffer.alloc(2 + payload.length);
+                response[0] = _opcode | 0b10000000;//1表示发送结束
+                response[1] = payload.length;//负载的长度
+                payload.copy(response, 2);
+                socket.write(response);
+            &#125;);
+        &#125;
+
+    &#125;
+&#125;);
+function unmask(buffer, mask) &#123;
+    const length = buffer.length;
+    for (let i = 0; i &lt; length; i++) &#123;
+        buffer[i] ^= mask[i &amp; 3];
+    &#125;
+&#125;
+socket.on(&#39;end&#39;, function () &#123;
+    console.log(&#39;end&#39;);
+&#125;);
+socket.on(&#39;close&#39;, function () &#123;
+    console.log(&#39;close&#39;);
+&#125;);
+socket.on(&#39;error&#39;, function (error) &#123;
+    console.log(error);
+&#125;);</code></pre>
+<p>});<br>server.listen(9999);</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/01/17/websocket/" data-id="ckk16ku8g0000r8fyfggw3j4l" data-title="" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-nextjs" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2021/01/17/nextjs/" class="article-date">
@@ -83,10 +632,18 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>#NEXT.JS入门实践<br>客户端和服务端代码 同构 ： 一套代码既可以跑在客户端也可以跑在服务端渲染一致<br>优点：<br>•    Next.js英文文档 Next.js中文文档 是一个轻量级的 React 服务端渲染应用框架<br>•    默认支持服务端渲染<br>•    自动根据页面进行代码分割<br>•    基于页面的客户端路由方案<br>•    基于 Webpack 的开发环境，支持热模块替换<br>•    可以跟Koa或者其它Node.js服务器进行集成<br>•    支持 Babel 和 Webpack 的配置项定制<br>•    静态文件服务 public<br>##创建一个 Next.js 应用<br>通过执行 create-next-app创建应用，cd 进入您要在其中创建应用程序的目录，输入命令<br>npx create-next-app nextjs-blog –use-npm –example “<a target="_blank" rel="noopener" href="https://github.com/vercel/next-learn-starter/tree/master/learn-starter&quot;">https://github.com/vercel/next-learn-starter/tree/master/learn-starter&quot;</a><br>运行开发服务器<br>cd进入名为 nextjs-blog 的新目录<br>cd nextjs-blog<br>运行命令，这将在 3000 端口上启动 Next.js 应用程序的“开发服务器”。在浏览器中打开 <a target="_blank" rel="noopener" href="http://localhost:3000/">http://localhost:3000</a> 就会看到页面了。<br>npm run dev<br>编辑页面<br>确保 Next.js 开发服务器仍在运行<br>用你的文本编辑器打开 pages/index.js 文件，编辑内容后保存，浏览器会自动重新加载并更新页面<br>创建页面<br>Page 就是 React 组件， 放在 pages 目录下<br>##路由<br>1、文件系统路由，每个 page使用其文件名在pages的目录，作为路由（route）。<br>index路由，路由器会自动将命名为index的文件路由到目录的根目录。<br>• pages/index.js → /<br>• pages/blog/index.js → /blog<br>嵌套路由，<br>• pages/blog/first-post.js → /blog/first-post<br>• pages/dashboard/settings/username.js → /dashboard/settings/username<br><a target="_blank" rel="noopener" href="http://localhost:3000/blog/first-post%E5%8D%B3%E5%8F%AF%E6%9F%A5%E7%9C%8B%E9%A1%B5%E9%9D%A2">http://localhost:3000/blog/first-post即可查看页面</a><br>动态路由的 pages（页面）。例如pages/posts/[id].js 的文件，那么就可以通过 posts/1、posts/2 等类似的路径进行访问。<br>要匹配动态段，可以使用括号语法。这允许您匹配命名参数<br>• pages/blog/[slug].js → /blog/:slug (/blog/hello-world)<br>• pages/[username]/settings.js → /:username/settings (/foo/settings)<br>• pages/post/[…all].js → /post/* (/post/2020/id/title)<br>##用Link实现页面间导航<br>2、使用Next.js的组件Link 跳转页面，实现组件切换局部刷新。 代替了<a href=''>触发浏览器refresh整个页面。<br>import Link from ‘next/link’;<br>//使用<Link>里面放需要一个<a>包裹连接</a></Link><br>export default function FirstPost() {<br>  return (<br>    &lt;&gt;<br>      <h1>First Post</h1><br>      <h2><br>        <Link href="/"><br>          <a>Back to home</a><br>        </Link><br>      </h2><br>    &lt;/&gt;<br>  )<br>}<br>如果需要给路由传参数，则使用query的形式<br>Client-side Navigation<br>##代码分割和预取<br>3、自动代码分割。相互独立，每个页面只加载该页面所需要的内容。<br>4、Prefetching： 如果使用了Link ，出现在浏览器中，Linked page 在后台就会预先获取。点击链接转换几乎是及时的。<br>资源、元数据和css<br>##静态资源<br>根目录创建public文件夹，里面的静态资源可以像pages一样通过目录路径访问。<br>修改页面的metadata<br>组件中引入Head组件, 在组件中添加<br>import Head from ‘next/head’;<br>export default function FirstPost() {<br>  return (<br>    &lt;&gt;<br>      <Head><br>        <title>First Post</title><br>      </Head><br>      …<br>    &lt;/&gt;<br>  )<br>}<br>##CSS样式<br>支持“CSS-in-JS”库 styled-jsx，写在render中，格式为<style jsx><code>...</code></style>，注意中间是模板字符串。<br>组件内使用CSS Modules<br>首先根目录下创建components文件夹，里面创建layout.js文件，作为外层组件。<br>export default function Layout({ children }) {<br>  return <div>{children}</div><br>}<br>在pages/posts/first-post.js, import Layout<br>import Head from ‘next/head’<br>import Link from ‘next/link’<br>import Layout from ‘../../components/layout’<br>export default function FirstPost() {<br>  return (<br>    <Layout><br>      <Head><br>        <title>First Post</title><br>      </Head><br>      <h1>First Post</h1><br>      <h2><br>        <Link href="/"><br>          <a>Back to home</a><br>        </Link><br>      </h2><br>    </Layout><br>  )<br>}<br>支持添加css modules,文件必须以.modules.css结尾.<br>在components文件夹下创建layout.module.css内容为<br>.container {<br>  max-width: 36rem;<br>  padding: 0 1rem;<br>  margin: 3rem auto 6rem;<br>}<br>在layout.js中引入<br>import styles from ‘./layout.module.css’<br>export default function Layout({ children }) {<br>  return <div className={styles.container}>{children}</div><br>}<br>全局styles<br>在pages中添加App.js，这个App组件是顶级组件，在所有不同的页面中都是通用的。例如，当在页面之间导航时，你可以使用这个App组件来保持状态。<br>export default function App({ Component, pageProps }) {<br>  return &lt;Component {…pageProps} /&gt;<br>}<br>重启服务 npm run dev<br>创建顶级目录styles文件夹，新建global.css，然后在pages/_app.js引入，样式将在子组件中都生效。<br>Next.js使用postCSS解析css，可以添加配置文件postcss.config.js，自定义配置。</p>
-<p>##预渲染和数据获取<br>• 预呈现：默认情况下，Next.js预渲染每个页面。这意味着Next.js提前为每个页面生成HTML，而不是全部由客户端JavaScript完成。预呈现可以带来更好的性能和SEO。<br>• 水合：预呈现的HTML都与该页面所需的最小JavaScript代码相关联。当页面被浏览器加载时，它的其他JavaScript代码会运行，使页面可完成全部交互。<br>• 查看是否预呈现：禁用浏览器JavaScript，看到你的应用程序是在没有JavaScript的情况下呈现的。这是因为Next.js已经将应用程序预渲染成静态HTML，允许您在不运行JavaScript的情况下查看应用程序UI。而没有Next.js的react应用,是看不到应用的。<br>预呈现的两种形式:静态生成和服务器端呈现。<br>不同之处在于它为页面生成HTML的时间。<br>• 静态生成：是在构建build时生成HTML的预呈现方法。然后在每次请求重用预呈现的HTML。<br>• 服务器端呈现：是在每次页面请求时，重新生成页面的 HTML预呈现方法 。<br>注意：在开发模式下(当你运行npm run dev或yarn dev时)，每个页面都会在每个请求上预渲染——即使是那些使用静态生成的页面。<br>何时使用静态生成or服务端渲染：你应该问自己:“我可以在用户请求之前预先渲染这个页面吗?”如果答案是肯定的，那么您应该选择静态生成。如果您不能在用户请求之前预呈现页面，也许您的页面显示了频繁更新的数据，并且页面内容在每次请求时都发生变化。在这种情况下，可以使用服务器端呈现。它会慢一些，但预渲染的页面将始终是最新的。或者您可以跳过预呈现，使用客户端JavaScript来填充频繁更新的数据。<br>有数据和没有数据的静态生成。<br>到目前为止都是没有数据的静态生成，<br>有数据的页面需要等获取数据后，再生成页面。</p>
-<p>###获取数据<br>getStaticProps以及如何使用它将外部博客数据导入索引页面。在导出组件的page里，导出一个asyn function 叫做getStaticProps<br>• getStaticProps在生产环境的build时运行，并且……<br>• 在函数内部，可以获取外部数据并将其作为props发送到页面。<br>export default function Home(props) { … }<br>export async function getStaticProps(context) {<br>    // 获取数据<br>  const data = await fetch(…);<br>  // The value of the <code>props</code> key will be passed to the <code>Home</code> component<br>  return {<br>    props: …<br>  }<br>}<br>getInitialProps是组件的静态方法，无论服务端渲染还是客户端渲染都会调用。<br>获取数据后，组件的props就能获取到getInitialProps return 的对象，render 的时候就能直接使用了。当服务端渲染时，getInitialProps将会把return数据序列化，就像JSON.stringify<br>getStaticProps会帮你告诉Next.js这个页面依赖一些数据，所以“当你在构建时预渲染这个页面时，一定要先解决它们!”<br>注意：在开发模式中，getStaticProps会在每个请求上运行。<br>现在，我们将使用文件系统向应用程序添加博客数据。每一篇博客文章都是一个markdown文件。<br>创建一个新的顶级目录posts(这与pages/posts不同)，在内部，创建两个文件:pre-rendering.md和ssg-ssr.md作为数据，然后用getStaticProps获取数据更新pages/index.js。<br>getStaticProps 细节<br>getStaticProps里除了可以使用文件系统获取数据，还可以使用API或者直接查询数据库。因为getStaticProps只在服务器端运行。它永远不会在客户端运行。它甚至不会包含在浏览器的JS包中。这意味着您可以编写诸如直接数据库查询之类的代码，而无需将它们发送到浏览器。<br>Development vs. Production<br>• 在开发中(npm run dev或yarn dev)， getStaticProps会在每个请求request上运行。<br>• 在生产中，getStaticProps在构建build时运行。<br>因为它是在构建时运行的，所以您不能使用仅在请求期间可用的数据，如查询参数或HTTP头。<br>从页面导出<br>getStaticProps只能从page导出。您不能从非页面文件中导出它。产生这种限制的原因之一是，React需要在呈现页面之前获得所有必需的数据。<br>###有数据的服务端预渲染<br>需要请求时获取数据怎么办<br>如果不能在用户请求之前预呈现页面，那么静态生成就不是一个好主意。也许您的页面显示了频繁更新的数据，并且页面内容在每次请求时都发生变化。在这种情况下，您可以尝试服务器端呈现或跳过预呈现。<br>如果你需要在请求时而不是在构建时获取数据，你可以尝试服务器端渲染:<br>在page中 用export getServerSideProps代替getStaticProps<br>export async function getServerSideProps(context) {<br>  return {<br>    props: {<br>      // props for your component<br>    }<br>  }<br>}<br>因为getServerSideProps是在请求时调用的，所以它的参数(context)包含特定于请求的参数。<br>只有当您需要预呈现一个必须在请求时获取数据的页面时，您才应该使用getServerSideProps。到第一个字节的时间Time to first byte(TTFB)将比getStaticProps慢，因为服务器必须对每个请求计算结果。而且如果没有额外的配置，CDN无法缓存结果。<br>###客户端渲染<br>如果你不需要预渲染数据，你也可以使用以下策略(称为客户端渲染):<br>静态生成(预渲染)不需要外部数据的页面部分。<br>加载页面时，使用JavaScript从客户机获取外部数据，并填充其余部分。<br>例如，这种方法适用于用户指示板页面。因为指示板是一个私有的、特定于用户的页面，所以SEO是无关的，并且页面不需要预先渲染。数据经常更新，这就需要在请求时获取数据。</p>
-<p>##动态路由<br>我们已经用博客数据填充了索引页面，但是还没有创建单独的博客页面(下面是预期的结果)。我们希望这些页面的URL依赖于博客数据，这意味着我们需要使用动态路由。<br>getStaticPaths静态生成带有动态路由的页面<br>我们希望每一个post的路径为/posts/<id>，其中<id>是markdown文件的名称。我们有两个文件 ssg-ssr.md 和 pre-rendering.md, 我们希望他们的路径是 /posts/ssg-ssr and /posts/pre-rendering.<br>• 我们将在pages/posts下创建一个名为[id].js的页面，编写代码来渲染post页面，像创建其他页面一样，<br>• 并从这个page中 export function getStaticPath<br>• 最后，我们需要再次实现getStaticProps—这一次，用给定的id为博客文章获取必要的数据。getStaticProps将给出包含id的参数(因为文件名是[id].js)。<br>import Layout from ‘../../components/layout’<br>export default function Post() {<br>  return <Layout>…</Layout><br>}<br>export async function getStaticPaths() {<br>  // Return a list of possible value for id<br>  return [‘id’, ‘id’]<br>}<br>export async function getStaticProps({ params }) {<br>  // 根据params.id，获取blog post数据<br>}</p>
+        <h1 id="NEXT-JS入门实践"><a href="#NEXT-JS入门实践" class="headerlink" title="NEXT.JS入门实践"></a>NEXT.JS入门实践</h1><p>客户端和服务端代码 同构 ： 一套代码既可以跑在客户端也可以跑在服务端渲染一致<br>优点：<br>•    Next.js英文文档 Next.js中文文档 是一个轻量级的 React 服务端渲染应用框架<br>•    默认支持服务端渲染<br>•    自动根据页面进行代码分割<br>•    基于页面的客户端路由方案<br>•    基于 Webpack 的开发环境，支持热模块替换<br>•    可以跟Koa或者其它Node.js服务器进行集成<br>•    支持 Babel 和 Webpack 的配置项定制<br>•    静态文件服务 public</p>
+<h2 id="创建一个-Next-js-应用"><a href="#创建一个-Next-js-应用" class="headerlink" title="创建一个 Next.js 应用"></a>创建一个 Next.js 应用</h2><p>通过执行 create-next-app创建应用，cd 进入您要在其中创建应用程序的目录，输入命令<br>npx create-next-app nextjs-blog –use-npm –example “<a target="_blank" rel="noopener" href="https://github.com/vercel/next-learn-starter/tree/master/learn-starter&quot;">https://github.com/vercel/next-learn-starter/tree/master/learn-starter&quot;</a><br>运行开发服务器<br>cd进入名为 nextjs-blog 的新目录<br>cd nextjs-blog<br>运行命令，这将在 3000 端口上启动 Next.js 应用程序的“开发服务器”。在浏览器中打开 <a target="_blank" rel="noopener" href="http://localhost:3000/">http://localhost:3000</a> 就会看到页面了。<br>npm run dev<br>编辑页面<br>确保 Next.js 开发服务器仍在运行<br>用你的文本编辑器打开 pages/index.js 文件，编辑内容后保存，浏览器会自动重新加载并更新页面<br>创建页面<br>Page 就是 React 组件， 放在 pages 目录下</p>
+<h2 id="路由"><a href="#路由" class="headerlink" title="路由"></a>路由</h2><p>1、文件系统路由，每个 page使用其文件名在pages的目录，作为路由（route）。<br>index路由，路由器会自动将命名为index的文件路由到目录的根目录。<br>• pages/index.js → /<br>• pages/blog/index.js → /blog<br>嵌套路由，<br>• pages/blog/first-post.js → /blog/first-post<br>• pages/dashboard/settings/username.js → /dashboard/settings/username<br><a target="_blank" rel="noopener" href="http://localhost:3000/blog/first-post%E5%8D%B3%E5%8F%AF%E6%9F%A5%E7%9C%8B%E9%A1%B5%E9%9D%A2">http://localhost:3000/blog/first-post即可查看页面</a><br>动态路由的 pages（页面）。例如pages/posts/[id].js 的文件，那么就可以通过 posts/1、posts/2 等类似的路径进行访问。<br>要匹配动态段，可以使用括号语法。这允许您匹配命名参数<br>• pages/blog/[slug].js → /blog/:slug (/blog/hello-world)<br>• pages/[username]/settings.js → /:username/settings (/foo/settings)<br>• pages/post/[…all].js → /post/* (/post/2020/id/title)</p>
+<h2 id="用Link实现页面间导航"><a href="#用Link实现页面间导航" class="headerlink" title="用Link实现页面间导航"></a>用Link实现页面间导航</h2><p>2、使用Next.js的组件Link 跳转页面，实现组件切换局部刷新。 代替了<a href=''>触发浏览器refresh整个页面。<br>import Link from ‘next/link’;<br>//使用<Link>里面放需要一个<a>包裹连接</a></Link><br>export default function FirstPost() {<br>  return (<br>    &lt;&gt;<br>      <h1>First Post</h1><br>      <h2><br>        <Link href="/"><br>          <a>Back to home</a><br>        </Link><br>      </h2><br>    &lt;/&gt;<br>  )<br>}<br>如果需要给路由传参数，则使用query的形式<br>Client-side Navigation</p>
+<h2 id="代码分割和预取"><a href="#代码分割和预取" class="headerlink" title="代码分割和预取"></a>代码分割和预取</h2><p>3、自动代码分割。相互独立，每个页面只加载该页面所需要的内容。<br>4、Prefetching： 如果使用了Link ，出现在浏览器中，Linked page 在后台就会预先获取。点击链接转换几乎是及时的。<br>资源、元数据和css</p>
+<h2 id="静态资源"><a href="#静态资源" class="headerlink" title="静态资源"></a>静态资源</h2><p>根目录创建public文件夹，里面的静态资源可以像pages一样通过目录路径访问。<br>修改页面的metadata<br>组件中引入Head组件, 在组件中添加<br>import Head from ‘next/head’;<br>export default function FirstPost() {<br>  return (<br>    &lt;&gt;<br>      <Head><br>        <title>First Post</title><br>      </Head><br>      …<br>    &lt;/&gt;<br>  )<br>}</p>
+<h2 id="CSS样式"><a href="#CSS样式" class="headerlink" title="CSS样式"></a>CSS样式</h2><p>支持“CSS-in-JS”库 styled-jsx，写在render中，格式为<style jsx><code>...</code></style>，注意中间是模板字符串。<br>组件内使用CSS Modules<br>首先根目录下创建components文件夹，里面创建layout.js文件，作为外层组件。<br>export default function Layout({ children }) {<br>  return <div>{children}</div><br>}<br>在pages/posts/first-post.js, import Layout<br>import Head from ‘next/head’<br>import Link from ‘next/link’<br>import Layout from ‘../../components/layout’<br>export default function FirstPost() {<br>  return (<br>    <Layout><br>      <Head><br>        <title>First Post</title><br>      </Head><br>      <h1>First Post</h1><br>      <h2><br>        <Link href="/"><br>          <a>Back to home</a><br>        </Link><br>      </h2><br>    </Layout><br>  )<br>}<br>支持添加css modules,文件必须以.modules.css结尾.<br>在components文件夹下创建layout.module.css内容为<br>.container {<br>  max-width: 36rem;<br>  padding: 0 1rem;<br>  margin: 3rem auto 6rem;<br>}<br>在layout.js中引入<br>import styles from ‘./layout.module.css’<br>export default function Layout({ children }) {<br>  return <div className={styles.container}>{children}</div><br>}<br>全局styles<br>在pages中添加App.js，这个App组件是顶级组件，在所有不同的页面中都是通用的。例如，当在页面之间导航时，你可以使用这个App组件来保持状态。<br>export default function App({ Component, pageProps }) {<br>  return &lt;Component {…pageProps} /&gt;<br>}<br>重启服务 npm run dev<br>创建顶级目录styles文件夹，新建global.css，然后在pages/_app.js引入，样式将在子组件中都生效。<br>Next.js使用postCSS解析css，可以添加配置文件postcss.config.js，自定义配置。</p>
+<h2 id="预渲染和数据获取"><a href="#预渲染和数据获取" class="headerlink" title="预渲染和数据获取"></a>预渲染和数据获取</h2><p>• 预呈现：默认情况下，Next.js预渲染每个页面。这意味着Next.js提前为每个页面生成HTML，而不是全部由客户端JavaScript完成。预呈现可以带来更好的性能和SEO。<br>• 水合：预呈现的HTML都与该页面所需的最小JavaScript代码相关联。当页面被浏览器加载时，它的其他JavaScript代码会运行，使页面可完成全部交互。<br>• 查看是否预呈现：禁用浏览器JavaScript，看到你的应用程序是在没有JavaScript的情况下呈现的。这是因为Next.js已经将应用程序预渲染成静态HTML，允许您在不运行JavaScript的情况下查看应用程序UI。而没有Next.js的react应用,是看不到应用的。<br>预呈现的两种形式:静态生成和服务器端呈现。<br>不同之处在于它为页面生成HTML的时间。<br>• 静态生成：是在构建build时生成HTML的预呈现方法。然后在每次请求重用预呈现的HTML。<br>• 服务器端呈现：是在每次页面请求时，重新生成页面的 HTML预呈现方法 。<br>注意：在开发模式下(当你运行npm run dev或yarn dev时)，每个页面都会在每个请求上预渲染——即使是那些使用静态生成的页面。<br>何时使用静态生成or服务端渲染：你应该问自己:“我可以在用户请求之前预先渲染这个页面吗?”如果答案是肯定的，那么您应该选择静态生成。如果您不能在用户请求之前预呈现页面，也许您的页面显示了频繁更新的数据，并且页面内容在每次请求时都发生变化。在这种情况下，可以使用服务器端呈现。它会慢一些，但预渲染的页面将始终是最新的。或者您可以跳过预呈现，使用客户端JavaScript来填充频繁更新的数据。<br>有数据和没有数据的静态生成。<br>到目前为止都是没有数据的静态生成，<br>有数据的页面需要等获取数据后，再生成页面。</p>
+<h3 id="获取数据"><a href="#获取数据" class="headerlink" title="获取数据"></a>获取数据</h3><p>getStaticProps以及如何使用它将外部博客数据导入索引页面。在导出组件的page里，导出一个asyn function 叫做getStaticProps<br>• getStaticProps在生产环境的build时运行，并且……<br>• 在函数内部，可以获取外部数据并将其作为props发送到页面。<br>export default function Home(props) { … }<br>export async function getStaticProps(context) {<br>    // 获取数据<br>  const data = await fetch(…);<br>  // The value of the <code>props</code> key will be passed to the <code>Home</code> component<br>  return {<br>    props: …<br>  }<br>}<br>getInitialProps是组件的静态方法，无论服务端渲染还是客户端渲染都会调用。<br>获取数据后，组件的props就能获取到getInitialProps return 的对象，render 的时候就能直接使用了。当服务端渲染时，getInitialProps将会把return数据序列化，就像JSON.stringify<br>getStaticProps会帮你告诉Next.js这个页面依赖一些数据，所以“当你在构建时预渲染这个页面时，一定要先解决它们!”<br>注意：在开发模式中，getStaticProps会在每个请求上运行。<br>现在，我们将使用文件系统向应用程序添加博客数据。每一篇博客文章都是一个markdown文件。<br>创建一个新的顶级目录posts(这与pages/posts不同)，在内部，创建两个文件:pre-rendering.md和ssg-ssr.md作为数据，然后用getStaticProps获取数据更新pages/index.js。<br>getStaticProps 细节<br>getStaticProps里除了可以使用文件系统获取数据，还可以使用API或者直接查询数据库。因为getStaticProps只在服务器端运行。它永远不会在客户端运行。它甚至不会包含在浏览器的JS包中。这意味着您可以编写诸如直接数据库查询之类的代码，而无需将它们发送到浏览器。<br>Development vs. Production<br>• 在开发中(npm run dev或yarn dev)， getStaticProps会在每个请求request上运行。<br>• 在生产中，getStaticProps在构建build时运行。<br>因为它是在构建时运行的，所以您不能使用仅在请求期间可用的数据，如查询参数或HTTP头。<br>从页面导出<br>getStaticProps只能从page导出。您不能从非页面文件中导出它。产生这种限制的原因之一是，React需要在呈现页面之前获得所有必需的数据。</p>
+<h3 id="有数据的服务端预渲染"><a href="#有数据的服务端预渲染" class="headerlink" title="有数据的服务端预渲染"></a>有数据的服务端预渲染</h3><p>需要请求时获取数据怎么办<br>如果不能在用户请求之前预呈现页面，那么静态生成就不是一个好主意。也许您的页面显示了频繁更新的数据，并且页面内容在每次请求时都发生变化。在这种情况下，您可以尝试服务器端呈现或跳过预呈现。<br>如果你需要在请求时而不是在构建时获取数据，你可以尝试服务器端渲染:<br>在page中 用export getServerSideProps代替getStaticProps<br>export async function getServerSideProps(context) {<br>  return {<br>    props: {<br>      // props for your component<br>    }<br>  }<br>}<br>因为getServerSideProps是在请求时调用的，所以它的参数(context)包含特定于请求的参数。<br>只有当您需要预呈现一个必须在请求时获取数据的页面时，您才应该使用getServerSideProps。到第一个字节的时间Time to first byte(TTFB)将比getStaticProps慢，因为服务器必须对每个请求计算结果。而且如果没有额外的配置，CDN无法缓存结果。</p>
+<h3 id="客户端渲染"><a href="#客户端渲染" class="headerlink" title="客户端渲染"></a>客户端渲染</h3><p>如果你不需要预渲染数据，你也可以使用以下策略(称为客户端渲染):<br>静态生成(预渲染)不需要外部数据的页面部分。<br>加载页面时，使用JavaScript从客户机获取外部数据，并填充其余部分。<br>例如，这种方法适用于用户指示板页面。因为指示板是一个私有的、特定于用户的页面，所以SEO是无关的，并且页面不需要预先渲染。数据经常更新，这就需要在请求时获取数据。</p>
+<h2 id="动态路由"><a href="#动态路由" class="headerlink" title="动态路由"></a>动态路由</h2><p>我们已经用博客数据填充了索引页面，但是还没有创建单独的博客页面(下面是预期的结果)。我们希望这些页面的URL依赖于博客数据，这意味着我们需要使用动态路由。<br>getStaticPaths静态生成带有动态路由的页面<br>我们希望每一个post的路径为/posts/<id>，其中<id>是markdown文件的名称。我们有两个文件 ssg-ssr.md 和 pre-rendering.md, 我们希望他们的路径是 /posts/ssg-ssr and /posts/pre-rendering.<br>• 我们将在pages/posts下创建一个名为[id].js的页面，编写代码来渲染post页面，像创建其他页面一样，<br>• 并从这个page中 export function getStaticPath<br>• 最后，我们需要再次实现getStaticProps—这一次，用给定的id为博客文章获取必要的数据。getStaticProps将给出包含id的参数(因为文件名是[id].js)。<br>import Layout from ‘../../components/layout’<br>export default function Post() {<br>  return <Layout>…</Layout><br>}<br>export async function getStaticPaths() {<br>  // Return a list of possible value for id<br>  return [‘id’, ‘id’]<br>}<br>export async function getStaticProps({ params }) {<br>  // 根据params.id，获取blog post数据<br>}</p>
 
       
     </div>
@@ -219,15 +776,23 @@
       <ul>
         
           <li>
-            <a href="/2021/01/17/nextjs/">(no title)</a>
+            <a href="/2021/01/31/promise/">promise</a>
           </li>
         
           <li>
-            <a href="/2021/01/12/hello-world/">Hello World</a>
+            <a href="/2021/01/31/jenkins-%E9%85%8D%E7%BD%AE/">jenkins 配置</a>
           </li>
         
           <li>
-            <a href="/2021/01/12/setup-my-blog/">setup_my_blog</a>
+            <a href="/2021/01/24/%E8%AE%A4%E8%AF%86docker/">认识docker</a>
+          </li>
+        
+          <li>
+            <a href="/2021/01/24/Websocket-2/">Websocket 2</a>
+          </li>
+        
+          <li>
+            <a href="/2021/01/17/websocket/">(no title)</a>
           </li>
         
       </ul>
